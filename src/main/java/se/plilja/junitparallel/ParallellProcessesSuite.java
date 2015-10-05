@@ -9,13 +9,15 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Suite;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Arrays.asList;
-import static se.plilja.junitparallel.TestUtil.snooze;
+import static se.plilja.junitparallel.Util.getAnnotation;
+import static se.plilja.junitparallel.Util.snooze;
 
 public class ParallellProcessesSuite extends Runner {
 
@@ -24,6 +26,8 @@ public class ParallellProcessesSuite extends Runner {
     private final Set<Process> workingProcesses = new HashSet<>();
     private final Stack<Process> idleProcesses = new Stack<>();
     private final Map<Process, InterProcessCommunication> processIpc = new HashMap<>();
+    private List<StreamGobbler> streamGobblers = new ArrayList<>();
+
 
     public ParallellProcessesSuite(Class<?> suiteClass) {
         this.suiteClass = suiteClass;
@@ -66,18 +70,25 @@ public class ParallellProcessesSuite extends Runner {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            for (Process workingProcess : workingProcesses) {
-                workingProcess.destroyForcibly();
-            }
-            for (Process idleProcess : idleProcesses) {
-                idleProcess.destroyForcibly();
-            }
-            for (InterProcessCommunication ipc : processIpc.values()) {
-                try {
-                    ipc.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            cleanUp();
+        }
+    }
+
+    private void cleanUp() {
+        for (StreamGobbler streamGobbler : streamGobblers) {
+            streamGobbler.pleaseStop();
+        }
+        for (Process workingProcess : workingProcesses) {
+            workingProcess.destroyForcibly();
+        }
+        for (Process idleProcess : idleProcesses) {
+            idleProcess.destroyForcibly();
+        }
+        for (InterProcessCommunication ipc : processIpc.values()) {
+            try {
+                ipc.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -102,7 +113,6 @@ public class ParallellProcessesSuite extends Runner {
 
     private void sendJobToProcess(Class<?> testClass, Process idleProcess) throws IOException {
         InterProcessCommunication ipc = processIpc.get(idleProcess);
-        System.out.println("SENDING JOB " + testClass.getName());
         ipc.sendMessage(testClass.getName());
     }
 
@@ -110,11 +120,13 @@ public class ParallellProcessesSuite extends Runner {
         for (Process workingProcess : workingProcesses) {
             InterProcessCommunication ipc = processIpc.get(workingProcess);
             while (ipc.hasInput()) {
-                String line = ipc.receiveMessage();
-                System.out.println(line);
-                JunitExecutorDaemon.InterProcessCommunication2.sendMessageToNotifier(line, runNotifier);
-                if (JunitExecutorDaemon.InterProcessCommunication2.isTestFinished(line)) {
+                Object o = ipc.receiveObject();
+                if (o instanceof TestProgress) {
+                    ((TestProgress) o).passToNotifier(runNotifier);
+                } else if (o instanceof TestClassDone) {
                     idleProcesses.add(workingProcess);
+                } else {
+                    throw new IllegalArgumentException("Uknown object received");
                 }
             }
         }
@@ -147,8 +159,8 @@ public class ParallellProcessesSuite extends Runner {
             InterProcessCommunication client = InterProcessCommunication.createClient(port);
             processIpc.put(process, client);
 
-            new StreamGobbler(process.getErrorStream(), System.err).start();
-            new StreamGobbler(process.getInputStream(), System.out).start();
+            startStreamGobbler(process.getErrorStream(), System.err);
+            startStreamGobbler(process.getInputStream(), System.out);
 
             return process;
 
@@ -157,19 +169,16 @@ public class ParallellProcessesSuite extends Runner {
         }
     }
 
+    private void startStreamGobbler(InputStream inputStream, PrintStream out) {
+        StreamGobbler streamGobbler = new StreamGobbler(inputStream, out);
+        streamGobbler.start();
+        streamGobblers.add(streamGobbler);
+    }
+
     private List<Class<?>> getTestClassesInSuite() {
         return getAnnotation(suiteClass.getAnnotations(), Suite.SuiteClasses.class)
                 .map(a -> asList(a.value()))
                 .orElseGet(Collections::emptyList);
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends Annotation> Optional<T> getAnnotation(Annotation[] annotations, Class<T> annotationClazz) {
-        for (Annotation a : annotations) {
-            if (annotationClazz.isAssignableFrom(a.getClass())) {
-                return Optional.of((T) a);
-            }
-        }
-        return Optional.empty();
-    }
 }

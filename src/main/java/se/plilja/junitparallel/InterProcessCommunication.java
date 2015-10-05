@@ -7,7 +7,7 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static se.plilja.junitparallel.TestUtil.snooze;
+import static se.plilja.junitparallel.Util.snooze;
 
 class InterProcessCommunication implements AutoCloseable {
     private static final int SOCKET_CONNECT_TIMEOUT = 2000;
@@ -28,12 +28,10 @@ class InterProcessCommunication implements AutoCloseable {
         ServerSocket server = null;
         Socket socket = null;
         try {
-            System.out.println(port);
             server = new ServerSocket(port);
             socket = server.accept();
             return new InterProcessCommunication(socket, singletonList(server));
         } catch (IOException e) {
-            System.out.println("SMALLER");
             if (socket != null) {
                 socket.close();
             }
@@ -87,12 +85,12 @@ class InterProcessCommunication implements AutoCloseable {
     }
 
     @SuppressWarnings("unchecked")
-    <T> T receiveObject() throws IOException, ClassNotFoundException {
+    Object receiveObject() throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-        return (T) ois.readObject();
+        return ois.readObject();
     }
 
-    <T extends Serializable> void sendObject(T object) throws IOException, ClassNotFoundException {
+    void sendObject(Object object) throws IOException, ClassNotFoundException {
         ObjectOutputStream ous = new ObjectOutputStream(socket.getOutputStream());
         ous.writeObject(object);
     }

@@ -8,21 +8,21 @@ public class TestModifiesGlobals1 {
     @Test
     public void test1() {
         GlobalVariables.globalInt = 17;
-        TestUtil.snooze(1000);
+        Util.snooze(1000);
         assertEquals(17, GlobalVariables.globalInt);
     }
 
     @Test
     public void test2() {
         GlobalVariables.globalInt = 18;
-        TestUtil.snooze(1000);
+        Util.snooze(1000);
         assertEquals(18, GlobalVariables.globalInt);
     }
 
     @Test
     public void test3() {
         GlobalVariables.globalInt = 19;
-        TestUtil.snooze(1000);
+        Util.snooze(1000);
         assertEquals(19, GlobalVariables.globalInt);
     }
 }
