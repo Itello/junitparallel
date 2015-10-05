@@ -12,8 +12,10 @@ public class TestE_failing {
     }
 
     @Test
-    public void testE2() {
+    public void testE2_shouldFailWithAssertion() {
         Util.snooze(1000);
+        assert false;
+        throw new RuntimeException("We should not see this error");
     }
 
     @Test

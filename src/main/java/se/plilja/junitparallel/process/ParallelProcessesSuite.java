@@ -151,12 +151,14 @@ public class ParallelProcessesSuite extends Runner {
         try {
             String separator = System.getProperty("file.separator");
             String classpath = System.getProperty("java.class.path");
-            String path = System.getProperty("java.home")
-                    + separator + "bin" + separator + "java";
+            String path = System.getProperty("java.home") + separator + "bin" + separator + "java";
+
             int port = nextPort.incrementAndGet();
-            Process process = new ProcessBuilder(path, "-cp",
-                    classpath,
-                    JunitExecutorService.class.getName(), "" + port)
+            Process process = new ProcessBuilder(path,
+                    "-cp", classpath,
+                    assertionsAreEnabled() ? "-ea" : "",
+                    JunitExecutorService.class.getName(),
+                    "" + port)
                     .start();
 
 
@@ -171,6 +173,13 @@ public class ParallelProcessesSuite extends Runner {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private boolean assertionsAreEnabled() {
+        boolean assertionsAreEnabled = false;
+        assert assertionsAreEnabled = true; // boolean will be changed if assertions are enabled
+        return assertionsAreEnabled;
     }
 
     private void startStreamGobbler(InputStream inputStream, PrintStream out) {
