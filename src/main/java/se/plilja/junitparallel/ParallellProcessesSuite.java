@@ -8,29 +8,22 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Suite;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.net.ConnectException;
-import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Arrays.asList;
-import static se.plilja.junitparallel.TestUtil.sleep2;
+import static se.plilja.junitparallel.TestUtil.snooze;
 
 public class ParallellProcessesSuite extends Runner {
 
-    private AtomicInteger nextPort = new AtomicInteger(53145);
+    private AtomicInteger nextPort = new AtomicInteger(53297);
     private final Class<?> suiteClass;
     private final Set<Process> workingProcesses = new HashSet<>();
     private final Stack<Process> idleProcesses = new Stack<>();
-    private final Map<Process, Socket> processSocket = new HashMap<>();
+    private final Map<Process, InterProcessCommunication> processIpc = new HashMap<>();
 
     public ParallellProcessesSuite(Class<?> suiteClass) {
         this.suiteClass = suiteClass;
@@ -79,6 +72,13 @@ public class ParallellProcessesSuite extends Runner {
             for (Process idleProcess : idleProcesses) {
                 idleProcess.destroyForcibly();
             }
+            for (InterProcessCommunication ipc : processIpc.values()) {
+                try {
+                    ipc.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -86,7 +86,7 @@ public class ParallellProcessesSuite extends Runner {
         startProcesses();
         for (Class<?> testClass : getTestClassesInSuite()) {
             while (idleProcesses.isEmpty()) {
-                sleep2(5);
+                snooze(5);
                 moveFinishedProcessesToIdle(runNotifier);
             }
             Process idleProcess = idleProcesses.pop();
@@ -95,31 +95,25 @@ public class ParallellProcessesSuite extends Runner {
 
         }
         while (!workingProcesses.isEmpty()) {
-            sleep2(5);
+            snooze(5);
             moveFinishedProcessesToIdle(runNotifier);
         }
     }
 
-    private void sendJobToProcess(Class<?> testClass, Process idleProcess) {
-        try {
-            Socket socket = processSocket.get(idleProcess);
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-            System.out.println("Sending job : " + testClass.getName());
-            writer.println(testClass.getName());
-            writer.flush();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private void sendJobToProcess(Class<?> testClass, Process idleProcess) throws IOException {
+        InterProcessCommunication ipc = processIpc.get(idleProcess);
+        System.out.println("SENDING JOB " + testClass.getName());
+        ipc.sendMessage(testClass.getName());
     }
 
     private void moveFinishedProcessesToIdle(RunNotifier runNotifier) throws Exception {
         for (Process workingProcess : workingProcesses) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(processSocket.get(workingProcess).getInputStream()));
-            while (br.ready()) {
-                String line = br.readLine();
+            InterProcessCommunication ipc = processIpc.get(workingProcess);
+            while (ipc.hasInput()) {
+                String line = ipc.receiveMessage();
                 System.out.println(line);
-                JunitExecutorDaemon.InterProcessCommunication.sendMessageToNotifier(line, runNotifier);
-                if (JunitExecutorDaemon.InterProcessCommunication.isTestFinished(line)) {
+                JunitExecutorDaemon.InterProcessCommunication2.sendMessageToNotifier(line, runNotifier);
+                if (JunitExecutorDaemon.InterProcessCommunication2.isTestFinished(line)) {
                     idleProcesses.add(workingProcess);
                 }
             }
@@ -132,10 +126,8 @@ public class ParallellProcessesSuite extends Runner {
     }
 
     private void startProcesses() throws Exception {
-        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-            Future<Process> process = executorService.submit(() -> startJUnitExecutorDaemon());
-            idleProcesses.add(process.get());
+            idleProcesses.add(startJUnitExecutorDaemon());
         }
     }
 
@@ -151,16 +143,9 @@ public class ParallellProcessesSuite extends Runner {
                     JunitExecutorDaemon.class.getName(), "" + port)
                     .start();
 
-            Socket socket = null;
-            while (socket == null) {
-                try {
-                    socket = new Socket("localhost", port);
-                } catch (ConnectException ce) {
-                    sleep2(10); // Expected
-                }
-            }
 
-            processSocket.put(process, socket);
+            InterProcessCommunication client = InterProcessCommunication.createClient(port);
+            processIpc.put(process, client);
 
             new StreamGobbler(process.getErrorStream(), System.err).start();
             new StreamGobbler(process.getInputStream(), System.out).start();

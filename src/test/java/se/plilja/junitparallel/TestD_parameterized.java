@@ -17,7 +17,7 @@ public class TestD_parameterized {
     }
 
     @Test public void testD1() {
-        TestUtil.sleep2(1000);}
+        TestUtil.snooze(1000);}
     @Test public void testD2() {
-        TestUtil.sleep2(1000);}
+        TestUtil.snooze(1000);}
 }

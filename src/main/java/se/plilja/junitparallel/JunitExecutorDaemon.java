@@ -7,12 +7,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 import org.junit.runner.notification.RunNotifier;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Optional;
 
 public class JunitExecutorDaemon {
@@ -26,72 +21,66 @@ public class JunitExecutorDaemon {
     }
 
     public static void main(String[] args) throws Exception {
-        ServerSocket server = null;
-        Socket socket = null;
-        try {
-            int port = Integer.parseInt(args[0]);
-            server = new ServerSocket(port);
-            socket = server.accept();
-            BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        int port = Integer.parseInt(args[0]);
+        try (InterProcessCommunication ipc = InterProcessCommunication.createServer(port)) {
+
             while (true) {
-                String testClassName = br.readLine();
+                String testClassName = ipc.receiveMessage();
+                System.out.println(testClassName);
                 Class<?> testClass = Class.forName(testClassName.trim());
                 JUnitCore jUnitCore = new JUnitCore();
-                jUnitCore.addListener(new InterProcessListener(socket));
+                jUnitCore.addListener(new InterProcessListener(ipc));
                 jUnitCore.run(testClass);
-                InterProcessCommunication.writeMessage(socket, testClass, Optional.empty(), Code.TEST_CLASS_FINISHED);
+                ipc.sendMessage(InterProcessCommunication2.generateMessage(testClass, Optional.empty(), Code.TEST_CLASS_FINISHED));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            if (socket != null && !socket.isClosed()) {
-                socket.close();
-            }
-            if (server != null && !server.isClosed()) {
-                server.close();
-            }
         }
 
     }
 
     private static class InterProcessListener extends RunListener {
-        private Socket outSocket;
+        private final InterProcessCommunication ipc;
 
-        public InterProcessListener(Socket outSocket) {
-            this.outSocket = outSocket;
+        public InterProcessListener(InterProcessCommunication ipc) {
+            this.ipc = ipc;
         }
 
         @Override
         public void testStarted(Description description) throws Exception {
-            InterProcessCommunication.writeMessage(outSocket, description.getTestClass(), Optional.of(description.getMethodName()), Code.TEST_STARTED);
+            ipc.sendMessage(InterProcessCommunication2.generateMessage(description.getTestClass(), Optional.of(description.getMethodName()), Code.TEST_STARTED));
         }
 
         @Override
         public void testFinished(Description description) throws Exception {
-            InterProcessCommunication.writeMessage(outSocket, description.getTestClass(), Optional.of(description.getMethodName()), Code.SUCCESS);
+            ipc.sendMessage(InterProcessCommunication2.generateMessage(description.getTestClass(), Optional.of(description.getMethodName()), Code.SUCCESS));
         }
 
         @Override
         public void testFailure(Failure failure) throws Exception {
             Description description = failure.getDescription();
-            InterProcessCommunication.writeMessage(outSocket, description.getTestClass(), Optional.of(description.getMethodName()), Code.FAILURE);
+            ipc.sendMessage(InterProcessCommunication2.generateMessage(description.getTestClass(), Optional.of(description.getMethodName()), Code.FAILURE));
         }
 
         @Override
         public void testAssumptionFailure(Failure failure) {
-            Description description = failure.getDescription();
-            InterProcessCommunication.writeMessage(outSocket, description.getTestClass(), Optional.of(description.getMethodName()), Code.ASSUMPTION_FAILED);
+            try {
+                Description description = failure.getDescription();
+                ipc.sendMessage(InterProcessCommunication2.generateMessage(description.getTestClass(), Optional.of(description.getMethodName()), Code.ASSUMPTION_FAILED));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
         public void testIgnored(Description description) throws Exception {
-            InterProcessCommunication.writeMessage(outSocket, description.getTestClass(), Optional.of(description.getMethodName()), Code.IGNORED);
+            ipc.sendMessage(InterProcessCommunication2.generateMessage(description.getTestClass(), Optional.of(description.getMethodName()), Code.IGNORED));
         }
 
 
     }
 
-    public static class InterProcessCommunication {
+    public static class InterProcessCommunication2 {
 
         public static void sendMessageToNotifier(String message, RunNotifier runNotifier) throws Exception {
             String[] args = message.split(" ");
@@ -99,9 +88,6 @@ public class JunitExecutorDaemon {
             Class<?> clazz = Class.forName(args[1]);
             if (args.length >= 3) {
                 String method = args[2];
-//                Description classDesc = new JUnit4Builder().safeRunnerForClass(clazz).getDescription();
-//                Description testDescription = classDesc.getChildren().stream().filter(d -> d.getMethodName().equals(method)).collect(toList()).get(0);
-//                System.out.println(testDescription.toString());
                 Description testDescription = Description.createTestDescription(clazz, method);
                 if (code == Code.TEST_STARTED) {
                     runNotifier.fireTestStarted(testDescription);
@@ -126,16 +112,11 @@ public class JunitExecutorDaemon {
             return code == Code.TEST_CLASS_FINISHED;
         }
 
-        public static void writeMessage(Socket socket, Class<?> testClass, Optional<String> method, int code) {
-            try {
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                if (method.isPresent()) {
-                    out.println(String.format("%d %s %s", code, testClass.getName(), method.get()));
-                } else {
-                    out.println(String.format("%d %s", code, testClass.getName()));
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
+        public static String generateMessage(Class<?> testClass, Optional<String> method, int code) {
+            if (method.isPresent()) {
+                return String.format("%d %s %s", code, testClass.getName(), method.get());
+            } else {
+                return String.format("%d %s", code, testClass.getName());
             }
         }
     }
