@@ -1,9 +1,10 @@
-package se.plilja.junitparallel;
+package se.plilja.junitparallel.threads;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+import se.plilja.junitparallel.faketests.*;
 
-@RunWith(ParallellProcessesSuite.class)
+@RunWith(ParallelSuite.class)
 @Suite.SuiteClasses({
         TestA.class,
         TestB.class,
@@ -11,11 +12,8 @@ import org.junit.runners.Suite;
         TestD_parameterized.class,
         TestE_failing.class,
         TestF.class,
-        TestG.class,
-        TestModifiesGlobals1.class,
-        TestModifiesGlobals2.class,
-        TestModifiesGlobals3.class
+        TestG.class
 })
-public class TestSuite {
+public class TestParallelSuite {
 
 }

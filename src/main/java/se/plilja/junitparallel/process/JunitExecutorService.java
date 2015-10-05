@@ -1,18 +1,21 @@
-package se.plilja.junitparallel;
+package se.plilja.junitparallel.process;
 
 import org.junit.runner.JUnitCore;
 
-public class JunitExecutorDaemon {
+/**
+ * Service that can execute junit tests on demand.
+ */
+class JunitExecutorService {
 
     private int port;
 
-    public JunitExecutorDaemon(int port) {
+    public JunitExecutorService(int port) {
         this.port = port;
     }
 
     public static void main(String[] args) throws Exception {
         int port = Integer.parseInt(args[0]);
-        JunitExecutorDaemon daemon = new JunitExecutorDaemon(port);
+        JunitExecutorService daemon = new JunitExecutorService(port);
         daemon.run();
     }
 

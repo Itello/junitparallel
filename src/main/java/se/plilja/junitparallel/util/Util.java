@@ -1,11 +1,11 @@
-package se.plilja.junitparallel;
+package se.plilja.junitparallel.util;
 
 
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-class Util {
-    static void snooze(int millis) {
+public class Util {
+    public static void snooze(int millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
@@ -14,7 +14,7 @@ class Util {
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends Annotation> Optional<T> getAnnotation(Annotation[] annotations, Class<T> annotationClazz) {
+    public static <T extends Annotation> Optional<T> getAnnotation(Annotation[] annotations, Class<T> annotationClazz) {
         for (Annotation a : annotations) {
             if (annotationClazz.isAssignableFrom(a.getClass())) {
                 return Optional.of((T) a);

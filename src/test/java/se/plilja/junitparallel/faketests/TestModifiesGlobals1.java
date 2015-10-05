@@ -1,9 +1,14 @@
-package se.plilja.junitparallel;
+package se.plilja.junitparallel.faketests;
 
 import org.junit.Test;
+import se.plilja.junitparallel.util.Util;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * Simulates a suboptimal test that must be run in a separate java process as
+ * it modifies global state.
+ */
 public class TestModifiesGlobals1 {
     @Test
     public void test1() {

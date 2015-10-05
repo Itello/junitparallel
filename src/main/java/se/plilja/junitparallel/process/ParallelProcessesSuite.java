@@ -1,4 +1,4 @@
-package se.plilja.junitparallel;
+package se.plilja.junitparallel.process;
 
 import org.junit.Test;
 import org.junit.runner.Description;
@@ -16,10 +16,14 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Arrays.asList;
-import static se.plilja.junitparallel.Util.getAnnotation;
-import static se.plilja.junitparallel.Util.snooze;
+import static se.plilja.junitparallel.util.Util.getAnnotation;
+import static se.plilja.junitparallel.util.Util.snooze;
 
-public class ParallellProcessesSuite extends Runner {
+/**
+ * Used when tests need to be run in separate Java processes (typically
+ * because tests modify some global static state).
+ */
+public class ParallelProcessesSuite extends Runner {
 
     private AtomicInteger nextPort = new AtomicInteger(53297);
     private final Class<?> suiteClass;
@@ -29,7 +33,7 @@ public class ParallellProcessesSuite extends Runner {
     private List<StreamGobbler> streamGobblers = new ArrayList<>();
 
 
-    public ParallellProcessesSuite(Class<?> suiteClass) {
+    public ParallelProcessesSuite(Class<?> suiteClass) {
         this.suiteClass = suiteClass;
     }
 
@@ -152,7 +156,7 @@ public class ParallellProcessesSuite extends Runner {
             int port = nextPort.incrementAndGet();
             Process process = new ProcessBuilder(path, "-cp",
                     classpath,
-                    JunitExecutorDaemon.class.getName(), "" + port)
+                    JunitExecutorService.class.getName(), "" + port)
                     .start();
 
 

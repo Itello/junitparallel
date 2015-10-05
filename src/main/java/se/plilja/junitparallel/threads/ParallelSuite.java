@@ -1,4 +1,4 @@
-package se.plilja.junitparallel;
+package se.plilja.junitparallel.threads;
 
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;

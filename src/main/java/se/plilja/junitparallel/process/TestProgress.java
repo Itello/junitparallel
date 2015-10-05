@@ -1,4 +1,4 @@
-package se.plilja.junitparallel;
+package se.plilja.junitparallel.process;
 
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;

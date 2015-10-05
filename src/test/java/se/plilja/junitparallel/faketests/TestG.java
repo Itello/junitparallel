@@ -1,8 +1,9 @@
-package se.plilja.junitparallel;
+package se.plilja.junitparallel.faketests;
 
 import org.junit.Test;
+import se.plilja.junitparallel.util.Util;
 
-public class TestF {
+public class TestG {
     @Test public void testF1() {
         Util.snooze(1000);}
     @Test public void testF2() {
