@@ -4,14 +4,28 @@ import org.junit.Test;
 import se.plilja.junitparallel.util.Util;
 
 public class TestG {
-    @Test public void testF1() {
-        Util.snooze(1000);}
-    @Test public void testF2() {
-        Util.snooze(1000);}
-    @Test public void testF3() {
-        Util.snooze(1000);}
-    @Test public void testF4() {
-        Util.snooze(1000);}
-    @Test public void testF5() {
-        Util.snooze(1000);}
+    @Test
+    public void testF1() {
+        Util.snooze(1000);
+    }
+
+    @Test
+    public void testF2() {
+        Util.snooze(1000);
+    }
+
+    @Test
+    public void testF3() {
+        Util.snooze(1000);
+    }
+
+    @Test
+    public void testF4() {
+        Util.snooze(1000);
+    }
+
+    @Test
+    public void testF5() {
+        Util.snooze(1000);
+    }
 }

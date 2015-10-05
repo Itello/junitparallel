@@ -17,8 +17,13 @@ public class TestD_parameterized {
                 new Object[]{});
     }
 
-    @Test public void testD1() {
-        Util.snooze(1000);}
-    @Test public void testD2() {
-        Util.snooze(1000);}
+    @Test
+    public void testD1() {
+        Util.snooze(1000);
+    }
+
+    @Test
+    public void testD2() {
+        Util.snooze(1000);
+    }
 }
