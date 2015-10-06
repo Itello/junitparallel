@@ -1,10 +1,10 @@
 package se.plilja.junitparallel.process;
 
-import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Suite;
 import se.plilja.junitparallel.util.Util;
@@ -12,13 +12,10 @@ import se.plilja.junitparallel.util.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static se.plilja.junitparallel.util.Util.getAnnotation;
-import static se.plilja.junitparallel.util.Util.pickAvailablePort;
-import static se.plilja.junitparallel.util.Util.snooze;
+import static se.plilja.junitparallel.util.Util.*;
 
 /**
  * Used when tests need to be run in separate Java processes (typically
@@ -42,25 +39,21 @@ public class ParallelProcessesSuite extends Runner {
     public Description getDescription() {
         Description suiteDescription = Description.createSuiteDescription(getClass());
         for (Class<?> testClass : getTestClassesInSuite()) {
-            Description testClassDescription = Description.createTestDescription(testClass, testClass.getName());
-            if (!isParameterized(testClass)) {
-                for (Method method : sortedByName(testClass.getMethods())) {
-                    getAnnotation(method.getAnnotations(), Test.class)
-                            .ifPresent(a -> testClassDescription.addChild(Description.createTestDescription(testClass, method.getName())));
-                }
-                suiteDescription.addChild(testClassDescription);
-            }
+            suiteDescription.addChild(describeTestClass(testClass));
         }
         return suiteDescription;
     }
 
-    /**
-     * Sort to make IntelliJ happy.
-     */
-    private List<Method> sortedByName(Method[] methods) {
-        List<Method> res = asList(methods);
-        Collections.sort(res, (a, b) -> a.getName().compareTo(b.getName()));
-        return res;
+    private Description describeTestClass(Class<?> testClass) {
+        try {
+            if (isParameterized(testClass)) {
+                return new Parameterized(testClass).getDescription();
+            } else {
+                return new BlockJUnit4ClassRunner(testClass).getDescription();
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private boolean isParameterized(Class<?> testClass) {
@@ -143,9 +136,15 @@ public class ParallelProcessesSuite extends Runner {
     }
 
     private void startProcesses() throws Exception {
-        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+        for (int i = 0; i < getNumberOfCores(); i++) {
             idleProcesses.add(startJUnitExecutorDaemon());
         }
+    }
+
+    private int getNumberOfCores() {
+        return getAnnotation(suiteClass.getAnnotations(), ParallelProcessSuiteConfig.NumberOfCores.class)
+                .map(a -> a.value())
+                .orElse(Runtime.getRuntime().availableProcessors());
     }
 
     private Process startJUnitExecutorDaemon() throws IOException {
@@ -175,8 +174,8 @@ public class ParallelProcessesSuite extends Runner {
         return process;
     }
 
-    private Optional<Class<? extends WhenNewProcessCreated.Callback>> getNewProcessCreatedCallback() {
-        return getAnnotation(suiteClass.getAnnotations(), WhenNewProcessCreated.class)
+    private Optional<Class<? extends ParallelProcessSuiteConfig.WhenNewProcessCreated.Callback>> getNewProcessCreatedCallback() {
+        return getAnnotation(suiteClass.getAnnotations(), ParallelProcessSuiteConfig.WhenNewProcessCreated.class)
                 .map(o -> o.value());
     }
 
@@ -187,9 +186,11 @@ public class ParallelProcessesSuite extends Runner {
     }
 
     private List<Class<?>> getTestClassesInSuite() {
-        return getAnnotation(suiteClass.getAnnotations(), Suite.SuiteClasses.class)
+        List<Class<?>> result = getAnnotation(suiteClass.getAnnotations(), Suite.SuiteClasses.class)
                 .map(a -> asList(a.value()))
                 .orElseGet(Collections::emptyList);
+        result.sort((a, b) -> a.getName().compareTo(b.getName()));
+        return result;
     }
 
 }

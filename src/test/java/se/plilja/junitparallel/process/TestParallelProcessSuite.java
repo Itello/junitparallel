@@ -9,7 +9,7 @@ import se.plilja.junitparallel.faketests.*;
         TestA.class,
         TestB.class,
         TestC.class,
-        TestD_parameterized.class,
+//        TestD_parameterized.class,
         TestE_failing.class,
         TestF.class,
         TestG.class,

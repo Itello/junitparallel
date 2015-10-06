@@ -22,7 +22,7 @@ class JunitExecutorService {
             if (args.length >= 3 && args[2].trim().length() > 0) {
                 Class<?> clazz = Class.forName(args[2]);
                 Constructor<?> constructor = clazz.getConstructor();
-                WhenNewProcessCreated.Callback callback = (WhenNewProcessCreated.Callback) constructor.newInstance();
+                ParallelProcessSuiteConfig.WhenNewProcessCreated.Callback callback = (ParallelProcessSuiteConfig.WhenNewProcessCreated.Callback) constructor.newInstance();
                 callback.execute(forkNumber);
             }
         } catch (Exception e) {

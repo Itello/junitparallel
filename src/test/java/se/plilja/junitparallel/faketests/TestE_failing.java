@@ -20,6 +20,7 @@ public class TestE_failing {
 
     @Test
     public void testE3_shouldFailWithException() {
+        Util.snooze(1000);
         throw new RuntimeException();
     }
 
