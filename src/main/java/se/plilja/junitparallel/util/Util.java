@@ -1,7 +1,9 @@
 package se.plilja.junitparallel.util;
 
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.ServerSocket;
 import java.util.Optional;
 
 public class Util {
@@ -30,4 +32,16 @@ public class Util {
         assert assertionsAreEnabled = true; // boolean will be changed if assertions are enabled
         return assertionsAreEnabled;
     }
+
+    public static int pickAvailablePort() {
+        try {
+            ServerSocket serverSocket = new ServerSocket(0);
+            int result = serverSocket.getLocalPort();
+            serverSocket.close();
+            return result;
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
+    }
+
 }

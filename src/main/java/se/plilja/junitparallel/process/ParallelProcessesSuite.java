@@ -17,6 +17,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static se.plilja.junitparallel.util.Util.getAnnotation;
+import static se.plilja.junitparallel.util.Util.pickAvailablePort;
 import static se.plilja.junitparallel.util.Util.snooze;
 
 /**
@@ -25,7 +26,6 @@ import static se.plilja.junitparallel.util.Util.snooze;
  */
 public class ParallelProcessesSuite extends Runner {
 
-    private int nextPort = 53537;
     private int nextForkNumber = 0;
     private final Class<?> suiteClass;
     private final Set<Process> workingProcesses = new HashSet<>();
@@ -153,7 +153,7 @@ public class ParallelProcessesSuite extends Runner {
         String classpath = System.getProperty("java.class.path");
         String path = System.getProperty("java.home") + separator + "bin" + separator + "java";
 
-        int port = nextPort++;
+        int port = pickAvailablePort();
         int forkNumber = nextForkNumber++;
         ProcessBuilder processBuilder = new ProcessBuilder(path,
                 "-cp", classpath,
