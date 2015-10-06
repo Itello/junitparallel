@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.Arrays.asList;
 import static se.plilja.junitparallel.util.Util.getAnnotation;
@@ -25,7 +24,8 @@ import static se.plilja.junitparallel.util.Util.snooze;
  */
 public class ParallelProcessesSuite extends Runner {
 
-    private AtomicInteger nextPort = new AtomicInteger(53297);
+    private int nextPort = 53537;
+    private int nextForkNumber = 0;
     private final Class<?> suiteClass;
     private final Set<Process> workingProcesses = new HashSet<>();
     private final Stack<Process> idleProcesses = new Stack<>();
@@ -147,32 +147,36 @@ public class ParallelProcessesSuite extends Runner {
         }
     }
 
-    private Process startJUnitExecutorDaemon() {
-        try {
-            String separator = System.getProperty("file.separator");
-            String classpath = System.getProperty("java.class.path");
-            String path = System.getProperty("java.home") + separator + "bin" + separator + "java";
+    private Process startJUnitExecutorDaemon() throws IOException {
+        String separator = System.getProperty("file.separator");
+        String classpath = System.getProperty("java.class.path");
+        String path = System.getProperty("java.home") + separator + "bin" + separator + "java";
 
-            int port = nextPort.incrementAndGet();
-            Process process = new ProcessBuilder(path,
-                    "-cp", classpath,
-                    assertionsAreEnabled() ? "-ea" : "",
-                    JunitExecutorService.class.getName(),
-                    "" + port)
-                    .start();
+        int port = nextPort++;
+        int forkNumber = nextForkNumber++;
+        Process process = new ProcessBuilder(path,
+                "-cp", classpath,
+                assertionsAreEnabled() ? "-ea" : "",
+                JunitExecutorService.class.getName(),
+                "" + port,
+                "" + forkNumber,
+                getNewProcessCreatedCallback().map(Class::getName).orElse("")
+        )
+                .start();
 
 
-            InterProcessCommunication client = InterProcessCommunication.createClient(port);
-            processIpc.put(process, client);
+        InterProcessCommunication client = InterProcessCommunication.createClient(port);
+        processIpc.put(process, client);
 
-            startStreamGobbler(process.getErrorStream(), System.err);
-            startStreamGobbler(process.getInputStream(), System.out);
+        startStreamGobbler(process.getErrorStream(), System.err);
+        startStreamGobbler(process.getInputStream(), System.out);
 
-            return process;
+        return process;
+    }
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    private Optional<Class<? extends WhenNewProcessCreated.Callback>> getNewProcessCreatedCallback() {
+        return getAnnotation(suiteClass.getAnnotations(), WhenNewProcessCreated.class)
+                .map(o -> o.value());
     }
 
     @SuppressWarnings("ConstantConditions")

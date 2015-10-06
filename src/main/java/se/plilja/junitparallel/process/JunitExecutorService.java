@@ -2,6 +2,8 @@ package se.plilja.junitparallel.process;
 
 import org.junit.runner.JUnitCore;
 
+import java.lang.reflect.Constructor;
+
 /**
  * Service that can execute junit tests on demand.
  */
@@ -15,6 +17,18 @@ class JunitExecutorService {
 
     public static void main(String[] args) throws Exception {
         int port = Integer.parseInt(args[0]);
+        int forkNumber = Integer.parseInt(args[1]);
+        try {
+            if (args.length >= 3 && args[2].trim().length() > 0) {
+                Class<?> clazz = Class.forName(args[2]);
+                Constructor<?> constructor = clazz.getConstructor();
+                WhenNewProcessCreated.Callback callback = (WhenNewProcessCreated.Callback) constructor.newInstance();
+                callback.execute(forkNumber);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
         JunitExecutorService daemon = new JunitExecutorService(port);
         daemon.run();
     }
