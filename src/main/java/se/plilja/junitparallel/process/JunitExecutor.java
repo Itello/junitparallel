@@ -7,11 +7,11 @@ import java.lang.reflect.Constructor;
 /**
  * Service that can execute junit tests on demand.
  */
-class JunitExecutorService {
+class JunitExecutor {
 
     private int port;
 
-    public JunitExecutorService(int port) {
+    public JunitExecutor(int port) {
         this.port = port;
     }
 
@@ -29,7 +29,7 @@ class JunitExecutorService {
             e.printStackTrace();
             throw e;
         }
-        JunitExecutorService daemon = new JunitExecutorService(port);
+        JunitExecutor daemon = new JunitExecutor(port);
         daemon.run();
     }
 

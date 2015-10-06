@@ -6,7 +6,7 @@ import org.junit.runners.Suite;
 import se.plilja.junitparallel.faketests.*;
 
 @RunWith(ParallelProcessesSuite.class)
-@ParallelProcessSuiteConfig.NumberOfCores(8)
+@ParallelProcessSuiteConfig.NumberOfCores(4)
 @ParallelProcessSuiteConfig.WhenNewProcessCreated(PrintForkNumber.class)
 @Suite.SuiteClasses({
         TestA.class,
