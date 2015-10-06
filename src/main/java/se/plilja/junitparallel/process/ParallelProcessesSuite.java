@@ -7,6 +7,7 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Suite;
+import se.plilja.junitparallel.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -154,15 +155,15 @@ public class ParallelProcessesSuite extends Runner {
 
         int port = nextPort++;
         int forkNumber = nextForkNumber++;
-        Process process = new ProcessBuilder(path,
+        ProcessBuilder processBuilder = new ProcessBuilder(path,
                 "-cp", classpath,
-                assertionsAreEnabled() ? "-ea" : "",
+                Util.assertionsAreEnabled() ? "-ea" : "",
                 JunitExecutorService.class.getName(),
                 "" + port,
                 "" + forkNumber,
                 getNewProcessCreatedCallback().map(Class::getName).orElse("")
-        )
-                .start();
+        );
+        Process process = processBuilder.start();
 
 
         InterProcessCommunication client = InterProcessCommunication.createClient(port);
@@ -177,13 +178,6 @@ public class ParallelProcessesSuite extends Runner {
     private Optional<Class<? extends WhenNewProcessCreated.Callback>> getNewProcessCreatedCallback() {
         return getAnnotation(suiteClass.getAnnotations(), WhenNewProcessCreated.class)
                 .map(o -> o.value());
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    private boolean assertionsAreEnabled() {
-        boolean assertionsAreEnabled = false;
-        assert assertionsAreEnabled = true; // boolean will be changed if assertions are enabled
-        return assertionsAreEnabled;
     }
 
     private void startStreamGobbler(InputStream inputStream, PrintStream out) {

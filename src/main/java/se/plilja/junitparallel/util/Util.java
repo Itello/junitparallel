@@ -24,4 +24,10 @@ public class Util {
     }
 
 
+    @SuppressWarnings("ConstantConditions")
+    public static boolean assertionsAreEnabled() {
+        boolean assertionsAreEnabled = false;
+        assert assertionsAreEnabled = true; // boolean will be changed if assertions are enabled
+        return assertionsAreEnabled;
+    }
 }
