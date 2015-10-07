@@ -22,7 +22,6 @@ class JunitExecutorTaskManager {
     private List<StreamGobbler> streamGobblers = new ArrayList<>();
     private List<InterProcessCommunication> openConnections = new ArrayList<>();
 
-
     JunitExecutorTaskManager(Optional<Class<? extends ParallelProcessSuiteConfig.WhenNewProcessCreated.Callback>> newProcessCreatedCallback) {
         this.newProcessCreatedCallback = newProcessCreatedCallback;
     }

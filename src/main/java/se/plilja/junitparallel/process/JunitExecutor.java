@@ -34,7 +34,7 @@ class JunitExecutor {
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
-    public void run() {
+    public void run() throws Exception{
         try (InterProcessCommunication ipc = InterProcessCommunication.createServer(port)) {
             while (true) {
                 String testClassName = ipc.receiveMessage();
@@ -46,6 +46,7 @@ class JunitExecutor {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+            throw ex;
         }
     }
 
