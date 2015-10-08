@@ -15,13 +15,18 @@ class InterProcessCommunication implements AutoCloseable {
     private final Socket socket;
     private final List<Closeable> extraCloseables;
     private final BufferedReader br;
-    private PrintWriter out;
+    private final PrintWriter out;
+    private final ObjectInputStream ois;
+    private final ObjectOutputStream ous;
 
     private InterProcessCommunication(Socket socket, List<Closeable> extraCloseables) throws IOException {
         this.socket = socket;
         this.extraCloseables = extraCloseables;
         br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
+        ous = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+        ous.flush(); // To create the input stream we need to flush the output stream, otherwise it will hang
+        ois = new ObjectInputStream(socket.getInputStream());
     }
 
     static InterProcessCommunication createServer(int port) throws IOException {
@@ -66,6 +71,8 @@ class InterProcessCommunication implements AutoCloseable {
     public void close() throws IOException {
         out.close();
         br.close();
+        ous.close();
+        ois.close();
         socket.close();
         for (Closeable extraCloseable : extraCloseables) {
             extraCloseable.close();
@@ -86,13 +93,12 @@ class InterProcessCommunication implements AutoCloseable {
 
     @SuppressWarnings("unchecked")
     Object receiveObject() throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
         return ois.readObject();
     }
 
     void sendObject(Object object) throws IOException, ClassNotFoundException {
-        ObjectOutputStream ous = new ObjectOutputStream(socket.getOutputStream());
         ous.writeObject(object);
+        ous.flush();
     }
 
 }
