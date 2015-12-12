@@ -35,4 +35,23 @@ public class TestE_failing {
         Util.snooze(1000);
         assertEquals(1, 2);
     }
+
+    @Test
+    public void testE6_throwsUnserializableError() throws Exception {
+        assert !Util.isSerializable(new UnserializableError("foo"));
+        throw new UnserializableError("This message should show correctly");
+    }
+
+    private static class UnserializableError extends RuntimeException {
+        @SuppressWarnings("unused")
+        UnserializableClass foo = new UnserializableClass();
+
+        UnserializableError(String m) {
+            super(m);
+        }
+    }
+
+    private static class UnserializableClass {
+
+    }
 }

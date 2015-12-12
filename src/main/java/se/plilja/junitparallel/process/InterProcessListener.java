@@ -28,7 +28,7 @@ class InterProcessListener extends RunListener {
     @Override
     public void testFailure(Failure failure) throws Exception {
         TestProgress.TestFailure primary = new TestProgress.TestFailure(failure);
-        TestProgress.TestFailure backup = new TestProgress.TestFailure(new Failure(failure.getDescription(), new RuntimeException(failure.getMessage())));
+        TestProgress.TestFailure backup = new TestProgress.TestFailure(new Failure(failure.getDescription(), createBackupException(failure)));
         sendOrBackup(primary, backup);
     }
 
@@ -36,11 +36,17 @@ class InterProcessListener extends RunListener {
     public void testAssumptionFailure(Failure failure) {
         try {
             TestProgress.TestAssumptionFailed primary = new TestProgress.TestAssumptionFailed(failure);
-            TestProgress.TestAssumptionFailed backup = new TestProgress.TestAssumptionFailed(new Failure(failure.getDescription(), new RuntimeException(failure.getMessage())));
+            TestProgress.TestAssumptionFailed backup = new TestProgress.TestAssumptionFailed(new Failure(failure.getDescription(), createBackupException(failure)));
             sendOrBackup(primary, backup);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private RuntimeException createBackupException(Failure failure) {
+        RuntimeException re = new RuntimeException(failure.getMessage());
+        re.setStackTrace(failure.getException().getStackTrace());
+        return re;
     }
 
     @Override
