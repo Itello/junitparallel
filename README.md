@@ -3,8 +3,8 @@ Possibility to run JUnit test across multiple JVM:s as a Suite class.
 
 ## Why?
 Because writing test that can truly run in parallel is hard. Especially if you
-have any kind of global state, like a database or static variables.
-
+have any kind of global state, like a database or static variables. And of course
+because waiting for slow tests is annoying.
 
 ## How?
 
