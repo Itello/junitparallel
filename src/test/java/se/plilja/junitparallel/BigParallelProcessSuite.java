@@ -1,10 +1,10 @@
-package se.plilja.junitparallel.process;
+package se.plilja.junitparallel;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import se.plilja.junitparallel.faketests.TestWithManyQuickTests;
 
-@RunWith(ParallelProcessesSuite.class)
+@RunWith(ParallelProcessSuite.class)
 @Suite.SuiteClasses({
         TestWithManyQuickTests.class,
         TestWithManyQuickTests.class,

@@ -1,7 +1,7 @@
 package se.plilja.junitparallel.faketests;
 
 import org.junit.Test;
-import se.plilja.junitparallel.util.Util;
+import se.plilja.junitparallel.Util;
 
 public class TestF {
     @Test

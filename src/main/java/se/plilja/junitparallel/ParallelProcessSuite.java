@@ -1,4 +1,4 @@
-package se.plilja.junitparallel.process;
+package se.plilja.junitparallel;
 
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -12,21 +12,21 @@ import java.io.IOException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static se.plilja.junitparallel.util.Util.getAnnotation;
-import static se.plilja.junitparallel.util.Util.snooze;
+import static se.plilja.junitparallel.Util.getAnnotation;
+import static se.plilja.junitparallel.Util.snooze;
 
 /**
  * Used when tests need to be run in separate Java processes (typically
  * because tests modify some global static state).
  */
-public class ParallelProcessesSuite extends Runner {
+public class ParallelProcessSuite extends Runner {
 
     private final Class<?> suiteClass;
     private final Set<InterProcessCommunication> workingProcesses = new HashSet<>();
     private final Stack<InterProcessCommunication> idleProcesses = new Stack<>();
     private final JunitExecutorTaskManager taskManager;
 
-    public ParallelProcessesSuite(Class<?> suiteClass) {
+    public ParallelProcessSuite(Class<?> suiteClass) {
         this.suiteClass = suiteClass;
         taskManager = new JunitExecutorTaskManager(getNewProcessCreatedCallback());
     }

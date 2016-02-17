@@ -1,6 +1,4 @@
-package se.plilja.junitparallel.process;
-
-import se.plilja.junitparallel.util.Util;
+package se.plilja.junitparallel;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static se.plilja.junitparallel.util.Util.pickAvailablePort;
+import static se.plilja.junitparallel.Util.pickAvailablePort;
 
 /**
  * Starts and destroys the executor service.

@@ -3,7 +3,7 @@ package se.plilja.junitparallel.faketests;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import se.plilja.junitparallel.util.Util;
+import se.plilja.junitparallel.Util;
 
 import java.util.Collection;
 

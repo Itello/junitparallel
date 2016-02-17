@@ -1,4 +1,4 @@
-package se.plilja.junitparallel.process;
+package se.plilja.junitparallel;
 
 import org.junit.runner.JUnitCore;
 
