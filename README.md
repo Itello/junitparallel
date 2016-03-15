@@ -46,6 +46,9 @@ public class ExampleSuite {
 }
 ```
 
+## License
+This project uses Apache License 2.0.
+
 ## Disclaimer 1
 The runner adds some overhead to each test. If your tests are already fast, this overhead might
 actually make your suite slower. But if your tests were already fast then this project
