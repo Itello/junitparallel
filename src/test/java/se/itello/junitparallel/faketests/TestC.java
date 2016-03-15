@@ -1,31 +1,31 @@
-package se.plilja.junitparallel.faketests;
+package se.itello.junitparallel.faketests;
 
 import org.junit.Test;
-import se.plilja.junitparallel.Util;
+import se.itello.junitparallel.Util;
 
-public class TestF {
+public class TestC {
     @Test
-    public void testF1() {
+    public void testC1() {
         Util.snooze(1000);
     }
 
     @Test
-    public void testF2() {
+    public void testC2() {
         Util.snooze(1000);
     }
 
     @Test
-    public void testF3() {
+    public void testC3() {
         Util.snooze(1000);
     }
 
     @Test
-    public void testF4() {
+    public void testC4() {
         Util.snooze(1000);
     }
 
     @Test
-    public void testF5() {
+    public void testC5() {
         Util.snooze(1000);
     }
 }

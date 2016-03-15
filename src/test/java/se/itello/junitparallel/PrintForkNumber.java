@@ -1,6 +1,4 @@
-package se.plilja.junitparallel;
-
-import se.plilja.junitparallel.ParallelProcessSuiteConfig;
+package se.itello.junitparallel;
 
 public class PrintForkNumber implements ParallelProcessSuiteConfig.WhenNewProcessCreated.Callback {
     @Override

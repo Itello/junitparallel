@@ -1,8 +1,8 @@
-package se.plilja.junitparallel;
+package se.itello.junitparallel;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import se.plilja.junitparallel.faketests.*;
+import se.itello.junitparallel.faketests.*;
 
 @RunWith(ParallelProcessSuite.class)
 @Suite.SuiteClasses({

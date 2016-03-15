@@ -1,4 +1,4 @@
-package se.plilja.junitparallel;
+package se.itello.junitparallel;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

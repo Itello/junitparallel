@@ -1,4 +1,4 @@
-package se.plilja.junitparallel;
+package se.itello.junitparallel;
 
 
 import java.io.*;

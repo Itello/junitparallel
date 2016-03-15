@@ -1,4 +1,4 @@
-package se.plilja.junitparallel;
+package se.itello.junitparallel;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -7,7 +7,7 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static se.plilja.junitparallel.Util.snooze;
+import static se.itello.junitparallel.Util.snooze;
 
 class InterProcessCommunication implements AutoCloseable {
     private static final int SOCKET_CONNECT_TIMEOUT = 2000;

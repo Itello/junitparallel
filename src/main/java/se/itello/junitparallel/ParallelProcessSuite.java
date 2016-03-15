@@ -1,4 +1,4 @@
-package se.plilja.junitparallel;
+package se.itello.junitparallel;
 
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static se.plilja.junitparallel.Util.getAnnotation;
-import static se.plilja.junitparallel.Util.snooze;
+import static se.itello.junitparallel.Util.getAnnotation;
+import static se.itello.junitparallel.Util.snooze;
 
 /**
  * Used when tests need to be run in separate Java processes (typically

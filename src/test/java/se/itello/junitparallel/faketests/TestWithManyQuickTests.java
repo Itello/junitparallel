@@ -1,4 +1,4 @@
-package se.plilja.junitparallel.faketests;
+package se.itello.junitparallel.faketests;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package se.plilja.junitparallel;
+package se.itello.junitparallel;
 
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -6,7 +6,7 @@ import org.junit.runner.notification.RunListener;
 
 import java.io.IOException;
 
-import static se.plilja.junitparallel.Util.isSerializable;
+import static se.itello.junitparallel.Util.isSerializable;
 
 class InterProcessListener extends RunListener {
     private final InterProcessCommunication ipc;

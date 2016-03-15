@@ -1,9 +1,9 @@
-package se.plilja.junitparallel.faketests;
+package se.itello.junitparallel.faketests;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import se.plilja.junitparallel.Util;
+import se.itello.junitparallel.Util;
 
 import java.util.Collection;
 
