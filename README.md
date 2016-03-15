@@ -23,14 +23,14 @@ You can also run all tests across one or multiple packages using a ParallelProce
 ```Java
 @RunWith(ParallelProcessCpSuite.class)
 @ClasspathSuite.ClassnameFilters({
-        "se.itello.foo.*\\.*",
-        "se.itello.bar.*\\.*"
+        "se.itello.foo.*",
+        "se.itello.bar.*"
 })
 public class ExampleSuite {
 }
 ```
 
-### Customizations
+### Configurations
 You can make a couple of configurations to the parallel runner. Check out the javadoc for ParallelProcessSuiteConfig for more details.
 
 Example:
