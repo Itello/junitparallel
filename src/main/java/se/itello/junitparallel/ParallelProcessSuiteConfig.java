@@ -4,6 +4,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 
 public class ParallelProcessSuiteConfig {
     /**
@@ -22,10 +23,19 @@ public class ParallelProcessSuiteConfig {
         }
     }
 
-
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface NumberOfCores {
         int value();
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.TYPE})
+    public @interface JvmArgs {
+        Class<? extends JvmArgsProvider> value();
+
+        interface JvmArgsProvider {
+            List<String> execute(int forkNumber);
+        }
     }
 }

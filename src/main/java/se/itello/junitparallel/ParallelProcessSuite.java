@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
-import static se.itello.junitparallel.Util.getAnnotation;
-import static se.itello.junitparallel.Util.snooze;
+import static se.itello.junitparallel.ParallelSuiteUtil.getAnnotation;
+import static se.itello.junitparallel.ParallelSuiteUtil.snooze;
 
 /**
  * Used when tests need to be run in separate Java processes (typically
@@ -28,12 +28,27 @@ public class ParallelProcessSuite extends Runner {
 
     public ParallelProcessSuite(Class<?> suiteClass) {
         this.suiteClass = suiteClass;
-        taskManager = new JunitExecutorTaskManager(getNewProcessCreatedCallback());
+        taskManager = new JunitExecutorTaskManager(getNewProcessCreatedCallback(), getJvmArgsProvider());
     }
 
     private Optional<Class<? extends ParallelProcessSuiteConfig.WhenNewProcessCreated.Callback>> getNewProcessCreatedCallback() {
         return getAnnotation(suiteClass.getAnnotations(), ParallelProcessSuiteConfig.WhenNewProcessCreated.class)
                 .map(o -> o.value());
+    }
+
+    private ParallelProcessSuiteConfig.JvmArgs.JvmArgsProvider getJvmArgsProvider() {
+        return getAnnotation(suiteClass.getAnnotations(), ParallelProcessSuiteConfig.JvmArgs.class)
+                .map(o -> o.value())
+                .map(clazz -> safeNewInstance(clazz))
+                .orElse((forkNr) -> Collections.emptyList());
+    }
+
+    private ParallelProcessSuiteConfig.JvmArgs.JvmArgsProvider safeNewInstance(Class<? extends ParallelProcessSuiteConfig.JvmArgs.JvmArgsProvider> clazz) {
+        try {
+            return clazz.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -64,8 +79,12 @@ public class ParallelProcessSuite extends Runner {
 
     @Override
     public void run(RunNotifier runNotifier) {
+        runTests(runNotifier, getTestClassesInSuite());
+    }
+
+    public void runTests(RunNotifier runNotifier, List<Class<?>> testClasses) {
         try {
-            runInTryCatch(runNotifier);
+            runInTryCatch(runNotifier, testClasses);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -73,9 +92,9 @@ public class ParallelProcessSuite extends Runner {
         }
     }
 
-    private void runInTryCatch(RunNotifier runNotifier) throws Exception {
+    private void runInTryCatch(RunNotifier runNotifier, List<Class<?>> testClasses) throws Exception {
         startProcesses();
-        for (Class<?> testClass : getTestClassesInSuite()) {
+        for (Class<?> testClass : testClasses) {
             while (idleProcesses.isEmpty()) {
                 snooze(5);
                 moveFinishedProcessesToIdle(runNotifier);
@@ -83,7 +102,6 @@ public class ParallelProcessSuite extends Runner {
             InterProcessCommunication idleProcess = idleProcesses.pop();
             sendJobToProcess(testClass, idleProcess);
             workingProcesses.add(idleProcess);
-
         }
         while (!workingProcesses.isEmpty()) {
             snooze(5);

@@ -9,7 +9,7 @@ import java.lang.reflect.Constructor;
  */
 class JunitExecutor {
 
-    private int port;
+    private final int port;
 
     public JunitExecutor(int port) {
         this.port = port;

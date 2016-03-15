@@ -1,31 +1,31 @@
 package se.itello.junitparallel.faketests;
 
 import org.junit.Test;
-import se.itello.junitparallel.Util;
+import se.itello.junitparallel.ParallelSuiteUtil;
 
 public class TestB {
     @Test
     public void testB3() {
-        Util.snooze(400);
+        ParallelSuiteUtil.snooze(400);
     }
 
     @Test
     public void testB2() {
-        Util.snooze(300);
+        ParallelSuiteUtil.snooze(300);
     }
 
     @Test
     public void testB1() {
-        Util.snooze(2000);
+        ParallelSuiteUtil.snooze(2000);
     }
 
     @Test
     public void testB4() {
-        Util.snooze(900);
+        ParallelSuiteUtil.snooze(900);
     }
 
     @Test
     public void testB5() {
-        Util.snooze(1000);
+        ParallelSuiteUtil.snooze(1000);
     }
 }

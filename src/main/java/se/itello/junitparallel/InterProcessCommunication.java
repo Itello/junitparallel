@@ -7,7 +7,6 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static se.itello.junitparallel.Util.snooze;
 
 class InterProcessCommunication implements AutoCloseable {
     private static final int SOCKET_CONNECT_TIMEOUT = 2000;
@@ -61,7 +60,7 @@ class InterProcessCommunication implements AutoCloseable {
                 // This is expected if the server isn't ready yet
             }
             elapsedTime += 10;
-            snooze(10);
+            ParallelSuiteUtil.snooze(10);
         }
         // One last try, if we still can't create the socket the error will propagate to the caller
         return new Socket("localhost", port);

@@ -3,7 +3,7 @@ package se.itello.junitparallel.faketests;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import se.itello.junitparallel.Util;
+import se.itello.junitparallel.ParallelSuiteUtil;
 
 import java.util.Collection;
 
@@ -19,11 +19,11 @@ public class TestD_parameterized {
 
     @Test
     public void testD1() {
-        Util.snooze(1000);
+        ParallelSuiteUtil.snooze(1000);
     }
 
     @Test
     public void testD2() {
-        Util.snooze(1000);
+        ParallelSuiteUtil.snooze(1000);
     }
 }

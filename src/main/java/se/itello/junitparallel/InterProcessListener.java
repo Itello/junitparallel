@@ -4,10 +4,6 @@ import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
-import java.io.IOException;
-
-import static se.itello.junitparallel.Util.isSerializable;
-
 class InterProcessListener extends RunListener {
     private final InterProcessCommunication ipc;
 
@@ -27,39 +23,36 @@ class InterProcessListener extends RunListener {
 
     @Override
     public void testFailure(Failure failure) throws Exception {
-        TestProgress.TestFailure primary = new TestProgress.TestFailure(failure);
-        TestProgress.TestFailure backup = new TestProgress.TestFailure(new Failure(failure.getDescription(), createBackupException(failure)));
-        sendOrBackup(primary, backup);
+        TestProgress.TestFailure primary = new TestProgress.TestFailure(convertToSerializable(failure));
+        ipc.sendObject(primary);
     }
 
     @Override
     public void testAssumptionFailure(Failure failure) {
         try {
-            TestProgress.TestAssumptionFailed primary = new TestProgress.TestAssumptionFailed(failure);
-            TestProgress.TestAssumptionFailed backup = new TestProgress.TestAssumptionFailed(new Failure(failure.getDescription(), createBackupException(failure)));
-            sendOrBackup(primary, backup);
+            TestProgress.TestAssumptionFailed primary = new TestProgress.TestAssumptionFailed(convertToSerializable(failure));
+            ipc.sendObject(primary);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private RuntimeException createBackupException(Failure failure) {
-        RuntimeException re = new RuntimeException(failure.getMessage());
-        re.setStackTrace(failure.getException().getStackTrace());
-        return re;
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
+    private Failure convertToSerializable(Failure failure) {
+        Throwable originalException = failure.getException();
+        Throwable re;
+        if (originalException instanceof AssertionError) {
+            re = new AssertionError(originalException.getMessage());
+        } else {
+            re = new RuntimeException(originalException.getMessage());
+        }
+        re.setStackTrace(originalException.getStackTrace());
+        return new Failure(failure.getDescription(), re);
     }
 
     @Override
     public void testIgnored(Description description) throws Exception {
         ipc.sendObject(new TestProgress.TestIgnored(description));
-    }
-
-    private void sendOrBackup(Object primary, Object backup) throws IOException, ClassNotFoundException {
-        if (isSerializable(primary)) {
-            ipc.sendObject(primary);
-        } else {
-            ipc.sendObject(backup);
-        }
     }
 
 }
