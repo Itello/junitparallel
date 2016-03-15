@@ -19,6 +19,33 @@ public class TestParallelProcessSuite {
 }
 ```
 
+You can also run all tests across one or multiple packages using a ParallelProcessCpSuite. This uses the excellent cpsuite project. Check out the documentation for that project for instructions on how to specify what classes to run (https://github.com/takari/takari-cpsuite). 
+```Java
+@RunWith(ParallelProcessCpSuite.class)
+@ClasspathSuite.ClassnameFilters({
+        "se.itello.foo.*\\.*",
+        "se.itello.bar.*\\.*"
+})
+public class ExampleSuite {
+}
+```
+
+### Customizations
+You can make a couple of configurations to the parallel runner. Check out the javadoc for ParallelProcessSuiteConfig for more details.
+
+Example:
+```Java
+@RunWith(ParallelProcessCpSuite.class)
+@ParallelProcessSuiteConfig.NumberOfCores(3)
+@ParallelProcessSuiteConfig.WhenNewProcessCreated(RunThisForEachFork.class)
+@ParallelProcessSuiteConfig.JvmArgs(MaxMemorySettings.class)
+@ClasspathSuite.ClassnameFilters({
+        "se.itello.*"
+})
+public class ExampleSuite {
+}
+```
+
 ## Disclaimer 1
 The runner adds some overhead to each test. If your tests are already fast, this overhead might
 actually make your suite slower. But if your tests were already fast then this project
