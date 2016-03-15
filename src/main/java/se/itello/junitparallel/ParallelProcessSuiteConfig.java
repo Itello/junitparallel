@@ -29,6 +29,10 @@ public class ParallelProcessSuiteConfig {
         int value();
     }
 
+    /**
+     * Possibility to provide custom JVM-parameters to the
+     * different forks.
+     */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE})
     public @interface JvmArgs {
