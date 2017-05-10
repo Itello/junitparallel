@@ -6,7 +6,7 @@ Because writing test that can truly run in parallel is hard. Especially if you
 have any kind of global state, like a database or static variables. And of course
 because waiting for slow tests is annoying.
 
-## How??
+## How?
 
 To run your test suite in parallel across multiple JVM:s. Mark your suite with 
 the @RunWith annotation and let ParallelProcessSuite be the runner.
