@@ -6,7 +6,7 @@
 
     <groupId>junitparallel</groupId>
     <artifactId>junitparallel</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 
     <dependencies>
         <dependency>
@@ -15,9 +15,9 @@
             <version>4.11</version>
         </dependency>
         <dependency>
-            <groupId>com.googlecode.cedar-common</groupId>
-            <artifactId>cpsuite</artifactId>
-            <version>1.2.6</version>
+            <groupId>io.takari.junit</groupId>
+            <artifactId>takari-cpsuite</artifactId>
+            <version>1.2.7</version>
         </dependency>
 
     </dependencies>
